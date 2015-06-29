@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
+import android.graphics.PorterDuff.Mode;
 import android.graphics.PorterDuffXfermode;
 import android.os.Bundle;
 import android.view.MotionEvent;
@@ -15,6 +16,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ImageView;
 import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
 /**
  * 
  * @author aohuijun
@@ -39,6 +41,9 @@ public class CanvasPage extends Activity {
 	private final static int CHOOSE_BACK = 1;
 	private final static int CHOOSE_RUBBER = 2;
 	private final static int CHOOSE_CLEAR = 3;
+	
+	private final static int INIT_PEN_SIZE = 5;
+	private final static int INIT_RUBBER_SIZE = 30;
 	
 	private final static int WHITE = 0;
 	private final static int DARK_RED = 1;
@@ -77,7 +82,9 @@ public class CanvasPage extends Activity {
 		backgroundView.setOnClickListener(new ModeSelectedListener(CHOOSE_BACK));
 		rubberView.setOnClickListener(new ModeSelectedListener(CHOOSE_RUBBER));
 		clearView.setOnClickListener(new ModeSelectedListener(CHOOSE_CLEAR));
-
+		penSeekBar.setOnSeekBarChangeListener(new StyleChangeListener(CHOOSE_PEN));
+		rubberSeekBar.setOnSeekBarChangeListener(new StyleChangeListener(CHOOSE_RUBBER));
+		
 	}
 
 	private void initColors() {
@@ -114,20 +121,20 @@ public class CanvasPage extends Activity {
 
 	private void initCanvas() {
     	drawBoard = (ImageView)findViewById(R.id.canvas_draw);
-		baseBitmap = Bitmap.createBitmap(1080, 867, Bitmap.Config.ARGB_8888);
+		baseBitmap = Bitmap.createBitmap(1080, 869, Bitmap.Config.ARGB_8888);
 		canvas = new Canvas(baseBitmap);
 		canvas.drawColor(Color.TRANSPARENT);
 
 		paint = new Paint();
 		paint.setColor(Color.BLACK);
-		paint.setStrokeWidth(5);
+		paint.setStrokeWidth(INIT_PEN_SIZE);
 		paint.setAntiAlias(true);
 		paint.setDither(true);
 		
 		rubber = new Paint();
 		rubber.setAlpha(0);
 		rubber.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_IN));
-		rubber.setStrokeWidth(30);
+		rubber.setStrokeWidth(INIT_RUBBER_SIZE);
 		rubber.setAntiAlias(true);
 		rubber.setDither(true);
 		
@@ -195,7 +202,7 @@ public class CanvasPage extends Activity {
 				selectedMode = mode;
 				break;
 			case CHOOSE_CLEAR:
-				
+
 				break;
 			default:
 				break;
@@ -223,6 +230,41 @@ public class CanvasPage extends Activity {
 			default:
 				break;
 			}
+		}
+		
+	}
+	
+	public class StyleChangeListener implements OnSeekBarChangeListener {
+
+		private int mode;
+		public StyleChangeListener(int mode) {
+			this.mode = mode;
+		}
+
+		@Override
+		public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+			switch (mode) {
+			case CHOOSE_PEN:
+				paint.setStrokeWidth(progress);
+				break;
+			case CHOOSE_RUBBER:
+				rubber.setStrokeWidth(progress);
+				break;
+			default:
+				break;
+			}
+		}
+
+		@Override
+		public void onStartTrackingTouch(SeekBar seekBar) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void onStopTrackingTouch(SeekBar seekBar) {
+			// TODO Auto-generated method stub
+			
 		}
 		
 	}

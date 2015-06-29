@@ -67,7 +67,7 @@
             android:padding="5dp"
             android:layout_toRightOf="@id/canvas_eraser"
             android:layout_toEndOf="@id/canvas_eraser"
-            android:src="@drawable/clear_normal"
+            android:src="@drawable/clear_clickable"
             android:clickable="true" />
 
         
@@ -264,7 +264,11 @@
             android:id="@+id/canvas_pen_seekbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical" />
+            android:layout_gravity="center_vertical"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
+            android:progress="5"
+            android:max="50" />
         
     </LinearLayout>
     
@@ -287,7 +291,11 @@
             android:id="@+id/canvas_rubber_seekbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical" />
+            android:layout_gravity="center_vertical"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
+            android:progress="30"
+            android:max="75" />
         
     </LinearLayout>
     
