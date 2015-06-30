@@ -8,7 +8,6 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
-import android.graphics.PorterDuff.Mode;
 import android.graphics.PorterDuffXfermode;
 import android.os.Bundle;
 import android.view.MotionEvent;
@@ -128,14 +127,14 @@ public class CanvasPage extends Activity {
 		paint = new Paint();
 		paint.setColor(Color.BLACK);
 		paint.setStrokeWidth(INIT_PEN_SIZE);
-		paint.setAntiAlias(true);
+//		paint.setAntiAlias(true);
 		paint.setDither(true);
 		
 		rubber = new Paint();
 		rubber.setAlpha(0);
 		rubber.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_IN));
 		rubber.setStrokeWidth(INIT_RUBBER_SIZE);
-		rubber.setAntiAlias(true);
+//		rubber.setAntiAlias(true);
 		rubber.setDither(true);
 		
 		canvas.drawBitmap(baseBitmap, new Matrix(), paint);
@@ -202,7 +201,18 @@ public class CanvasPage extends Activity {
 				selectedMode = mode;
 				break;
 			case CHOOSE_CLEAR:
-
+				if (baseBitmap != null) {
+					baseBitmap = Bitmap.createBitmap(1080, 869, Bitmap.Config.ARGB_8888);
+					canvas = new Canvas(baseBitmap);
+					canvas.drawColor(Color.TRANSPARENT);
+					drawBoard.setImageBitmap(baseBitmap);
+				}
+				paint.setColor(Color.BLACK);
+				drawBoard.setBackgroundColor(Color.WHITE);
+				paint.setStrokeWidth(INIT_PEN_SIZE);
+				rubber.setStrokeWidth(INIT_RUBBER_SIZE);
+				penSeekBar.setProgress(INIT_PEN_SIZE);
+				rubberSeekBar.setProgress(INIT_RUBBER_SIZE);
 				break;
 			default:
 				break;
