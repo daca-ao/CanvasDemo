@@ -13,6 +13,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 /**
@@ -28,12 +29,15 @@ public class CanvasPage extends Activity {
 	private Paint rubber;
 	
 	private ImageView drawBoard;
+	private ImageView moreButton, selectedDoneButton;
+	private LinearLayout moreFunctionsLayout;
 	private ImageView penView, backgroundView, rubberView, clearView;
 	private ImageView color0, color1, color2, color3, color4, color5, color6, color7, color8, color9, colorA, colorB;
 	private SeekBar penSeekBar, rubberSeekBar;
 	
 	private int selectedMode = 0;
 	private String[] colors;
+	private boolean isSelected = false;
 	
 	public final static int CHOOSE_PEN = 0;
 	public final static int CHOOSE_BACK = 1;
@@ -67,13 +71,16 @@ public class CanvasPage extends Activity {
     }
 
 	private void initTools() {
+		moreButton = (ImageView)findViewById(R.id.canvas_more_button);
+		
+		moreFunctionsLayout = (LinearLayout)findViewById(R.id.canvas_more_functions);
 		penView = (ImageView)findViewById(R.id.canvas_pen);
 		backgroundView = (ImageView)findViewById(R.id.canvas_background);
 		rubberView = (ImageView)findViewById(R.id.canvas_eraser);
 		clearView = (ImageView)findViewById(R.id.canvas_clear);
 		penSeekBar = (SeekBar)findViewById(R.id.canvas_pen_seekbar);
 		rubberSeekBar = (SeekBar)findViewById(R.id.canvas_rubber_seekbar);
-		
+		selectedDoneButton = (ImageView)findViewById(R.id.canvas_done);
 		penView.setImageDrawable(getResources().getDrawable(R.drawable.pentool_selected));
 
 		penView.setOnClickListener(new ModeSelectedListener(CHOOSE_PEN));
@@ -83,6 +90,28 @@ public class CanvasPage extends Activity {
 		penSeekBar.setOnSeekBarChangeListener(new StyleChangeListener(CHOOSE_PEN));
 		rubberSeekBar.setOnSeekBarChangeListener(new StyleChangeListener(CHOOSE_RUBBER));
 		
+		moreButton.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				if (!isSelected) {
+					moreFunctionsLayout.setVisibility(View.VISIBLE);
+					moreButton.setVisibility(View.INVISIBLE);
+					isSelected = true;
+				}
+			}
+		});
+		selectedDoneButton.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				if (isSelected) {
+					moreFunctionsLayout.setVisibility(View.INVISIBLE);
+					moreButton.setVisibility(View.VISIBLE);
+					isSelected = false;
+				}
+			}
+		});
 	}
 
 	private void initColors() {

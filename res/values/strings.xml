@@ -6,5 +6,6 @@
     <string name="image_desc"></string>
     <string name="rubber_seekbar">Rubber Size: </string>
     <string name="pen_seekbar">Draw Size: </string>
+    <string name="title_activity_canvas_tool">CanvasTool</string>
 
 </resources>
