@@ -5,7 +5,6 @@ import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
@@ -36,26 +35,26 @@ public class CanvasPage extends Activity {
 	private int selectedMode = 0;
 	private String[] colors;
 	
-	private final static int CHOOSE_PEN = 0;
-	private final static int CHOOSE_BACK = 1;
-	private final static int CHOOSE_RUBBER = 2;
-	private final static int CHOOSE_CLEAR = 3;
+	public final static int CHOOSE_PEN = 0;
+	public final static int CHOOSE_BACK = 1;
+	public final static int CHOOSE_RUBBER = 2;
+	public final static int CHOOSE_CLEAR = 3;
 	
-	private final static int INIT_PEN_SIZE = 5;
-	private final static int INIT_RUBBER_SIZE = 30;
+	public final static int INIT_PEN_SIZE = 5;
+	public final static int INIT_RUBBER_SIZE = 30;
 	
-	private final static int WHITE = 0;
-	private final static int DARK_RED = 1;
-	private final static int BRIGHT_RED = 2;
-	private final static int PINK = 3;
-	private final static int YELLOW = 4;
-	private final static int ORANGE = 5;
-	private final static int BLACK = 6;
-	private final static int CYAN = 7;
-	private final static int MINT = 8;
-	private final static int PURPLE = 9;
-	private final static int HORIZON = 10;
-	private final static int GREEN = 11;
+	public final static int WHITE = 0;
+	public final static int DARK_RED = 1;
+	public final static int BRIGHT_RED = 2;
+	public final static int PINK = 3;
+	public final static int YELLOW = 4;
+	public final static int ORANGE = 5;
+	public final static int BLACK = 6;
+	public final static int CYAN = 7;
+	public final static int MINT = 8;
+	public final static int PURPLE = 9;
+	public final static int HORIZON = 10;
+	public final static int GREEN = 11;
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -119,27 +118,21 @@ public class CanvasPage extends Activity {
 	
 
 	private void initCanvas() {
-    	drawBoard = (ImageView)findViewById(R.id.canvas_draw);
-		baseBitmap = Bitmap.createBitmap(1080, 869, Bitmap.Config.ARGB_8888);
-		canvas = new Canvas(baseBitmap);
-		canvas.drawColor(Color.TRANSPARENT);
-
 		paint = new Paint();
 		paint.setColor(Color.BLACK);
 		paint.setStrokeWidth(INIT_PEN_SIZE);
-//		paint.setAntiAlias(true);
+		paint.setAntiAlias(true);
 		paint.setDither(true);
 		
 		rubber = new Paint();
 		rubber.setAlpha(0);
 		rubber.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_IN));
 		rubber.setStrokeWidth(INIT_RUBBER_SIZE);
-//		rubber.setAntiAlias(true);
+		rubber.setAntiAlias(true);
 		rubber.setDither(true);
 		
-		canvas.drawBitmap(baseBitmap, new Matrix(), paint);
-		drawBoard.setImageBitmap(baseBitmap);
-		drawBoard.setOnTouchListener(new View.OnTouchListener() {
+		drawBoard = (ImageView)findViewById(R.id.canvas_draw);
+    	drawBoard.setOnTouchListener(new View.OnTouchListener() {
 			
 			float startX;
 			float startY;
@@ -149,6 +142,11 @@ public class CanvasPage extends Activity {
 			public boolean onTouch(View v, MotionEvent event) {
 				switch (event.getAction()) {
 				case MotionEvent.ACTION_DOWN:
+					if (baseBitmap == null) {
+						baseBitmap = Bitmap.createBitmap(drawBoard.getWidth(), drawBoard.getHeight(), Bitmap.Config.ARGB_8888);
+						canvas = new Canvas(baseBitmap);
+						canvas.drawColor(Color.TRANSPARENT);
+					}
 					startX = event.getX();
 					startY = event.getY();
 					break;
@@ -170,6 +168,7 @@ public class CanvasPage extends Activity {
 				return true;
 			}
 		});
+
 	}
 	
 	public class ModeSelectedListener implements OnClickListener {
@@ -202,7 +201,7 @@ public class CanvasPage extends Activity {
 				break;
 			case CHOOSE_CLEAR:
 				if (baseBitmap != null) {
-					baseBitmap = Bitmap.createBitmap(1080, 869, Bitmap.Config.ARGB_8888);
+					baseBitmap = Bitmap.createBitmap(drawBoard.getWidth(), drawBoard.getHeight(), Bitmap.Config.ARGB_8888);
 					canvas = new Canvas(baseBitmap);
 					canvas.drawColor(Color.TRANSPARENT);
 					drawBoard.setImageBitmap(baseBitmap);
