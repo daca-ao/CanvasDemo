@@ -10,6 +10,7 @@ import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -27,27 +28,6 @@ import android.widget.SeekBar.OnSeekBarChangeListener;
  */
 public class CanvasPage extends Activity {
 
-	private Bitmap baseBitmap;
-	private Canvas canvas;
-	private Paint paint;
-	private Paint rubber;
-	
-	private ImageView drawBoard;
-	private ImageView moreButton, selectedDoneButton;
-	private LinearLayout moreFunctionsLayout;
-	private ImageView penView, backgroundView, rubberView, clearView;
-	private ImageView[] colorViews = new ImageView[12];
-	private int[] colorButtons = {R.id.change_color0, R.id.change_color1, R.id.change_color2, R.id.change_color3, 
-								R.id.change_color4, R.id.change_color5, R.id.change_color6, R.id.change_color7, 
-								R.id.change_color8, R.id.change_color9, R.id.change_colora, R.id.change_colorb};
-	private SeekBar penSeekBar, rubberSeekBar;
-	
-	private String[] colors;
-	private int selectedMode = 0;
-	private boolean isSelected = false;
-	
-	private RotateAnimation rotateAnimation;
-	
 	public final static int CHOOSE_PEN = 0;
 	public final static int CHOOSE_BACK = 1;
 	public final static int CHOOSE_RUBBER = 2;
@@ -68,6 +48,29 @@ public class CanvasPage extends Activity {
 	public final static int PURPLE = 9;
 	public final static int HORIZON = 10;
 	public final static int GREEN = 11;
+	
+	private RotateAnimation rotateAnimation;
+
+	private Bitmap baseBitmap;
+	private Canvas canvas;
+	private Paint paint;
+	private Paint rubber;
+	
+	private ImageView drawBoard;
+	private ImageView moreButton, selectedDoneButton;
+	private LinearLayout moreFunctionsLayout;
+	private ImageView penView, backgroundView, rubberView, clearView;
+	private ImageView[] colorViews = new ImageView[12];
+	private int[] colorButtons = {R.id.change_color0, R.id.change_color1, R.id.change_color2, R.id.change_color3, 
+								R.id.change_color4, R.id.change_color5, R.id.change_color6, R.id.change_color7, 
+								R.id.change_color8, R.id.change_color9, R.id.change_colora, R.id.change_colorb};
+	private SeekBar penSeekBar, rubberSeekBar;
+	
+	private String[] colors;
+	private int selectedMode = 0;
+	private boolean isSelected = false;
+	private int penPrevState = -1;
+	private int backPrevState = -1;
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,7 +106,6 @@ public class CanvasPage extends Activity {
 		clearView.setOnClickListener(new ModeSelectedListener(CHOOSE_CLEAR));
 		penSeekBar.setOnSeekBarChangeListener(new StyleChangeListener(CHOOSE_PEN));
 		rubberSeekBar.setOnSeekBarChangeListener(new StyleChangeListener(CHOOSE_RUBBER));
-		
 		moreButton.setOnClickListener(new View.OnClickListener() {
 			
 			@Override
@@ -123,12 +125,11 @@ public class CanvasPage extends Activity {
 
 	private void initColors() {
 		colors = getResources().getStringArray(R.array.color_array);
-		
 		for (int i = 0; i < colors.length; i++) {
 			colorViews[i] = (ImageView)findViewById(colorButtons[i]);
 			colorViews[i].setOnClickListener(new ColorChangeListener(i));
 		}
-		
+		colorViews[BLACK].setBackgroundResource(R.drawable.color_selection_background);
 	}
 	
 
@@ -206,16 +207,24 @@ public class CanvasPage extends Activity {
 		public void onClick(View v) {
 			switch (mode) {
 			case CHOOSE_PEN:
+				setColor(penPrevState);
 				penView.setImageDrawable(getResources().getDrawable(R.drawable.pentool_selected));
 				backgroundView.setImageDrawable(getResources().getDrawable(R.drawable.change_background_color_nomal));
 				rubberView.setImageDrawable(getResources().getDrawable(R.drawable.rubbertool_normal));
 				selectedMode = mode;
+				if (penPrevState == -1) {
+					colorViews[BLACK].setBackgroundResource(R.drawable.color_selection_background);
+				}
 				break;
 			case CHOOSE_BACK:
+				setColor(backPrevState);
 				penView.setImageDrawable(getResources().getDrawable(R.drawable.pentool_normal));
 				backgroundView.setImageDrawable(getResources().getDrawable(R.drawable.change_background_color_selected));
 				rubberView.setImageDrawable(getResources().getDrawable(R.drawable.rubbertool_normal));
 				selectedMode = mode;
+				if (backPrevState == -1) {
+					colorViews[WHITE].setBackgroundResource(R.drawable.color_selection_background);
+				}
 				break;
 			case CHOOSE_RUBBER:
 				penView.setImageDrawable(getResources().getDrawable(R.drawable.pentool_normal));
@@ -247,18 +256,30 @@ public class CanvasPage extends Activity {
 
 		@Override
 		public void onClick(View v) {
+			setColor(colorIndex);
 			switch (selectedMode) {
 			case CHOOSE_PEN:
 				paint.setColor(Color.parseColor(colors[colorIndex]));
+				penPrevState = colorIndex;
 				break;
 			case CHOOSE_BACK:
 				drawBoard.setBackgroundColor(Color.parseColor(colors[colorIndex]));
+				backPrevState = colorIndex;
 				break;
 			default:
 				break;
 			}
 		}
 		
+	}
+	
+	private void setColor(int index) {
+		for (int i = 0; i < colors.length; i++) {
+			colorViews[i].setBackgroundResource(0);
+		}
+		if (index != -1) {
+			colorViews[index].setBackgroundResource(R.drawable.color_selection_background);
+		}
 	}
 	
 	public class StyleChangeListener implements OnSeekBarChangeListener {
@@ -310,5 +331,18 @@ public class CanvasPage extends Activity {
 			isSelected = false;
 		}
 
+	}
+	
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_DOWN) {
+			if (isSelected) {
+				setMoreFunctions(true);
+			} else {
+				finish();
+				return true;
+			}
+		}
+		return true;
 	}
 }
