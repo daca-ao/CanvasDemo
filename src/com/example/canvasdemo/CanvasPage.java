@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.CornerPathEffect;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
@@ -12,6 +13,9 @@ import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.animation.AnimationUtils;
+import android.view.animation.LinearInterpolator;
+import android.view.animation.RotateAnimation;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
@@ -32,12 +36,17 @@ public class CanvasPage extends Activity {
 	private ImageView moreButton, selectedDoneButton;
 	private LinearLayout moreFunctionsLayout;
 	private ImageView penView, backgroundView, rubberView, clearView;
-	private ImageView color0, color1, color2, color3, color4, color5, color6, color7, color8, color9, colorA, colorB;
+	private ImageView[] colorViews = new ImageView[12];
+	private int[] colorButtons = {R.id.change_color0, R.id.change_color1, R.id.change_color2, R.id.change_color3, 
+								R.id.change_color4, R.id.change_color5, R.id.change_color6, R.id.change_color7, 
+								R.id.change_color8, R.id.change_color9, R.id.change_colora, R.id.change_colorb};
 	private SeekBar penSeekBar, rubberSeekBar;
 	
-	private int selectedMode = 0;
 	private String[] colors;
+	private int selectedMode = 0;
 	private boolean isSelected = false;
+	
+	private RotateAnimation rotateAnimation;
 	
 	public final static int CHOOSE_PEN = 0;
 	public final static int CHOOSE_BACK = 1;
@@ -71,6 +80,11 @@ public class CanvasPage extends Activity {
     }
 
 	private void initTools() {
+		
+		rotateAnimation = (RotateAnimation)AnimationUtils.loadAnimation(this, R.anim.reverse_anim);
+		LinearInterpolator interpolator = new LinearInterpolator();
+		rotateAnimation.setInterpolator(interpolator);
+		
 		moreButton = (ImageView)findViewById(R.id.canvas_more_button);
 		
 		moreFunctionsLayout = (LinearLayout)findViewById(R.id.canvas_more_functions);
@@ -94,54 +108,26 @@ public class CanvasPage extends Activity {
 			
 			@Override
 			public void onClick(View v) {
-				if (!isSelected) {
-					moreFunctionsLayout.setVisibility(View.VISIBLE);
-					moreButton.setVisibility(View.INVISIBLE);
-					isSelected = true;
-				}
+				setMoreFunctions(false);
 			}
 		});
 		selectedDoneButton.setOnClickListener(new View.OnClickListener() {
 			
 			@Override
 			public void onClick(View v) {
-				if (isSelected) {
-					moreFunctionsLayout.setVisibility(View.INVISIBLE);
-					moreButton.setVisibility(View.VISIBLE);
-					isSelected = false;
-				}
+				setMoreFunctions(true);
 			}
 		});
+		
 	}
 
 	private void initColors() {
 		colors = getResources().getStringArray(R.array.color_array);
 		
-		color0 = (ImageView)findViewById(R.id.change_color0);
-		color1 = (ImageView)findViewById(R.id.change_color1);
-		color2 = (ImageView)findViewById(R.id.change_color2);
-		color3 = (ImageView)findViewById(R.id.change_color3);
-		color4 = (ImageView)findViewById(R.id.change_color4);
-		color5 = (ImageView)findViewById(R.id.change_color5);
-		color6 = (ImageView)findViewById(R.id.change_color6);
-		color7 = (ImageView)findViewById(R.id.change_color7);
-		color8 = (ImageView)findViewById(R.id.change_color8);
-		color9 = (ImageView)findViewById(R.id.change_color9);
-		colorA = (ImageView)findViewById(R.id.change_colora);
-		colorB = (ImageView)findViewById(R.id.change_colorb);
-		
-		color0.setOnClickListener(new ColorChangeListener(WHITE));
-		color1.setOnClickListener(new ColorChangeListener(DARK_RED));
-		color2.setOnClickListener(new ColorChangeListener(BRIGHT_RED));
-		color3.setOnClickListener(new ColorChangeListener(PINK));
-		color4.setOnClickListener(new ColorChangeListener(YELLOW));
-		color5.setOnClickListener(new ColorChangeListener(ORANGE));
-		color6.setOnClickListener(new ColorChangeListener(BLACK));
-		color7.setOnClickListener(new ColorChangeListener(CYAN));
-		color8.setOnClickListener(new ColorChangeListener(MINT));
-		color9.setOnClickListener(new ColorChangeListener(PURPLE));
-		colorA.setOnClickListener(new ColorChangeListener(HORIZON));
-		colorB.setOnClickListener(new ColorChangeListener(GREEN));
+		for (int i = 0; i < colors.length; i++) {
+			colorViews[i] = (ImageView)findViewById(colorButtons[i]);
+			colorViews[i].setOnClickListener(new ColorChangeListener(i));
+		}
 		
 	}
 	
@@ -150,15 +136,13 @@ public class CanvasPage extends Activity {
 		paint = new Paint();
 		paint.setColor(Color.BLACK);
 		paint.setStrokeWidth(INIT_PEN_SIZE);
-		paint.setAntiAlias(true);
-		paint.setDither(true);
+		roundPaintEdge(paint);
 		
 		rubber = new Paint();
 		rubber.setAlpha(0);
 		rubber.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_IN));
 		rubber.setStrokeWidth(INIT_RUBBER_SIZE);
-		rubber.setAntiAlias(true);
-		rubber.setDither(true);
+		roundPaintEdge(rubber);
 		
 		drawBoard = (ImageView)findViewById(R.id.canvas_draw);
     	drawBoard.setOnTouchListener(new View.OnTouchListener() {
@@ -200,6 +184,17 @@ public class CanvasPage extends Activity {
 
 	}
 	
+	private void roundPaintEdge(Paint paint) {
+		if(null != paint){
+			paint.setAntiAlias(true);
+			paint.setDither(true);
+			paint.setStyle(Paint.Style.STROKE);
+			paint.setStrokeJoin(Paint.Join.ROUND);
+			paint.setStrokeCap(Paint.Cap.ROUND);
+			paint.setPathEffect(new CornerPathEffect(paint.getStrokeWidth()));
+		}
+	}
+
 	public class ModeSelectedListener implements OnClickListener {
 
 		private int mode;
@@ -235,12 +230,6 @@ public class CanvasPage extends Activity {
 					canvas.drawColor(Color.TRANSPARENT);
 					drawBoard.setImageBitmap(baseBitmap);
 				}
-				paint.setColor(Color.BLACK);
-				drawBoard.setBackgroundColor(Color.WHITE);
-				paint.setStrokeWidth(INIT_PEN_SIZE);
-				rubber.setStrokeWidth(INIT_RUBBER_SIZE);
-				penSeekBar.setProgress(INIT_PEN_SIZE);
-				rubberSeekBar.setProgress(INIT_RUBBER_SIZE);
 				break;
 			default:
 				break;
@@ -305,5 +294,21 @@ public class CanvasPage extends Activity {
 			
 		}
 		
+	}
+	
+	private void setMoreFunctions(boolean b) {
+		this.isSelected = b;
+		if (!isSelected) {
+			moreFunctionsLayout.setVisibility(View.VISIBLE);
+			moreButton.startAnimation(rotateAnimation);
+			moreButton.setVisibility(View.INVISIBLE);
+			isSelected = true;
+		} else if (isSelected) {
+			moreFunctionsLayout.setVisibility(View.INVISIBLE);
+			moreButton.clearAnimation();
+			moreButton.setVisibility(View.VISIBLE);
+			isSelected = false;
+		}
+
 	}
 }

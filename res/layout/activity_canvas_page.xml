@@ -84,7 +84,7 @@
 	            android:padding="5dp"
 	            android:layout_toRightOf="@id/canvas_clear"
 	            android:layout_toEndOf="@id/canvas_clear"
-	            android:src="@drawable/button_done"
+	            android:src="@drawable/button_down"
 	            android:clickable="true" />
 	    </RelativeLayout>
 	    
@@ -315,7 +315,7 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
         android:layout_margin="30dp"
-        android:src="@drawable/canvas_more"
+        android:src="@drawable/button_canvas_more"
         android:clickable="true" />
     
 </RelativeLayout>
